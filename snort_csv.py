@@ -2,19 +2,20 @@ import snortparser.snortparser
 import csv
 import sys
 
-
-
 RULES_FILE = sys.argv[1]
 OUTPUT_FILE = sys.argv[2]
+
+def is_rule(rule_line):
+    return len(rule_line) > 100
 
 def read_rules(path, filter_commented_rules=True):
     rules = []
     with open(path, 'rb') as f:
         rules = f.read()
 
-    parsed_rules = [snortparser.snortparser.Parser(active_rule.decode("utf-8"))
+    parsed_rules = [snortparser.snortparser.Parser(active_rule.decode("utf-8").replace("#", ""))
              for active_rule in rules.splitlines()
-             if not active_rule.startswith(b'#') and len(active_rule) > 0]
+             if is_rule(active_rule)]
     return parsed_rules
 
 def get_keys(row):

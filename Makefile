@@ -5,7 +5,7 @@ TARGET_DIR=target
 DATASET_DIR=dataset
 
 RULES_FILE=${TARGET_DIR}/snort3-community-rules/snort3-community.rules
-OUTPUT_FILE=${DATASET_DIR}/rules.csv
+OUTPUT_FILE=${DATASET_DIR}/comunnity-rules.csv
 
 all: parse.csv
 
@@ -18,5 +18,5 @@ $(DATASET_DIR):
 $(RULES_FILE): $(TARGET_DIR)
 	curl -L "${RULES_URL}" | tar -xz -C ${TARGET_DIR}
 
-parse.csv: $(DATASET_DIR) $(RULES_FILE)
+parse.csv: $(DATASET_DIR)
 	python3 snort_csv.py ${RULES_FILE} ${OUTPUT_FILE}
