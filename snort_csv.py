@@ -1,9 +1,10 @@
 import snortparser.snortparser
 import csv
 import sys
+from os import listdir
+from os.path import isfile, join
 
-RULES_FILE = sys.argv[1]
-OUTPUT_FILE = sys.argv[2]
+ignore_list = ['snort3-deleted.rules']
 
 def is_rule(rule_line):
     return len(rule_line) > 100
@@ -42,15 +43,39 @@ def to_row_value(row):
     values.append(msg[0])
     return values
 
-def write_to_file(header, rows):
-    with open(OUTPUT_FILE, "w") as outfile:
+def write_to_file(output_file, header, rows):
+    with open(output_file, "w") as outfile:
         csvwriter = csv.writer(outfile)
         csvwriter.writerow(header)
         for row in rows:
             csvwriter.writerow(to_row_value(row))
 
-rules = read_rules(RULES_FILE)
-header = list(get_keys(rules[0].header))
-header.append('msg')
-write_to_file(header, rules)
-print("Done")
+def process_single_file(rules_file, output_file):
+    rules = read_rules(rules_file)
+    header = list(get_keys(rules[0].header))
+    header.append('msg')
+    write_to_file(output_file, header, rules)
+    print("Done")
+
+def process_multiple_files(rules_files, output_file):
+    rules = []
+    for file in rules_files:
+        print(file)
+        file_rules = read_rules(file)
+        rules.extend(file_rules)
+    print(len(rules))
+    header = list(get_keys(rules[0].header))
+    header.append('msg')
+    write_to_file(output_file, header, rules)
+    print("Done")
+
+if __name__ == '__main__':
+    rules_path = sys.argv[1]
+    output_file = sys.argv[2]
+
+    if isfile(rules_path):
+        process_single_file(rules_path, output_file)
+    else:
+        files = [join(rules_path, f) for f in listdir(rules_path)
+                 if isfile(join(rules_path, f)) and '.rules' in f and f not in ignore_list]
+        process_multiple_files(files, output_file)
